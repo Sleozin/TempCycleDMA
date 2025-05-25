@@ -38,13 +38,13 @@
 void tarefa4_matriz_cor_por_tendencia(tendencia_t t) {
     switch (t) {
         case TENDENCIA_CAINDO:
-            npSet(COR_AZUL);     // Azul
+            npSetAll(COR_AZUL);     // Azul
             break;
         case TENDENCIA_ESTÁVEL:
-            npSet(COR_VERDE);    // Verde
+            npSetAll(COR_VERDE);    // Verde
             break;
         case TENDENCIA_SUBINDO:
-            npSet(COR_VERMELHO); // Vermelho
+            npSetAll(COR_VERMELHO); // Vermelho
             break;
     }
 

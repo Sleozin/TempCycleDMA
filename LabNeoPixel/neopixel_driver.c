@@ -47,14 +47,6 @@ void npSetAll(uint8_t r, uint8_t g, uint8_t b) {
     }
 }
 
-void npSet(uint8_t r, uint8_t g, uint8_t b) {
-    for (uint i = 0; i < LED_COUNT; ++i) {
-        if(i != 0){
-        npSetLED(i, r, g, b);
-        }
-    }
-}
-
 void npClear(void) {
     npSetAll(0, 0, 0);
 }

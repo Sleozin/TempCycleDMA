@@ -27,7 +27,6 @@ void npWrite(void);
 void npWriteComBrilho(float brilho);
 void npSetLED(uint8_t index, uint8_t r, uint8_t g, uint8_t b);
 void npSetAll(uint8_t r, uint8_t g, uint8_t b);
-void npSet(uint8_t r, uint8_t g, uint8_t b);
 void npClear(void);
 void liberar_maquina_pio(PIO pio, uint sm);
 uint getLEDIndex(uint x, uint y);
