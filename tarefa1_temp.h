@@ -3,6 +3,7 @@
 
 #include "hardware/dma.h"
 
-float tarefa1_obter_media_temp(dma_channel_config* cfg, int dma_chan);
+bool tarefa1_obter_media_temp(dma_channel_config* cfg, int dma_chan);
+float tarefa1_termina();
 
 #endif

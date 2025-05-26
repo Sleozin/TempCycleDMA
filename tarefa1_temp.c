@@ -85,24 +85,55 @@ static void iniciar_dma_temp(uint16_t *buffer, dma_channel_config *cfg, int dma_
  * @param dma_chan Número do canal DMA utilizado.
  * @return float Temperatura média calculada ao final do intervalo.
  */
-float tarefa1_obter_media_temp(dma_channel_config* cfg_temp, int dma_chan) {
-    float soma = 0.0f;
-    uint32_t total_amostras = 0;
 
-    absolute_time_t inicio = get_absolute_time();
+typedef enum {
+    ESTADO_PARADO = 0,
+    ESTADO_INICIANDO,
+    ESTADO_AGUARDANDO_DMA
+} estado_tarefa1_t;
 
-    while (absolute_time_diff_us(inicio, get_absolute_time()) < DURACAO_AMOSTRAGEM_US) {
-        dma_temp_done = false;
-        iniciar_dma_temp(buffer_temp, cfg_temp, dma_chan);
-        while (!dma_temp_done) __wfi();  // Aguarda fim do DMA
-        adc_run(false); // Desliga o ADC
+static estado_tarefa1_t estado_t1 = ESTADO_PARADO;
+static absolute_time_t inicio_amostragem;
+static float soma_temp = 0.0f;
+static uint32_t total_amostras = 0;
+static float media_temp = 0.0f;
 
-        for (int i = 0; i < BLOCO_AMOSTRAS; i++) {
-            soma += convert_to_celsius(buffer_temp[i]);
-        }
+bool tarefa1_obter_media_temp(dma_channel_config* cfg_temp, int dma_chan) {
+    switch (estado_t1) {
+        case ESTADO_PARADO:
+            soma_temp = 0.0f;
+            total_amostras = 0;
+            inicio_amostragem = get_absolute_time();
+            estado_t1 = ESTADO_INICIANDO;
+            break;
 
-        total_amostras += BLOCO_AMOSTRAS;
+        case ESTADO_INICIANDO:
+            dma_temp_done = false;
+            iniciar_dma_temp(buffer_temp, cfg_temp, dma_chan);
+            estado_t1 = ESTADO_AGUARDANDO_DMA;
+            break;
+
+        case ESTADO_AGUARDANDO_DMA:
+            if (dma_temp_done) {
+                adc_run(false);  // Desliga adc
+                for (int i = 0; i < BLOCO_AMOSTRAS; i++) {
+                    soma_temp += convert_to_celsius(buffer_temp[i]);
+                }
+                total_amostras += BLOCO_AMOSTRAS;
+
+                if (absolute_time_diff_us(inicio_amostragem, get_absolute_time()) >= DURACAO_AMOSTRAGEM_US) {
+                    media_temp = soma_temp / total_amostras;
+                    estado_t1 = ESTADO_PARADO;
+                    return true;  // Ciclo finalizado
+                } else {
+                    estado_t1 = ESTADO_INICIANDO;  // Novo bloco
+                }
+            }
+            break;
     }
+    return false;  // Ciclo ainda em andament
+}
 
-    return soma / total_amostras;
+float tarefa1_termina(){
+    return media_temp;
 }

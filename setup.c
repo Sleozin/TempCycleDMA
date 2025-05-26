@@ -43,10 +43,10 @@
 #include "pico/binary_info.h"
 #include "neopixel_driver.h"
 
-// === Buffer de vídeo do OLED (tela de 128 x 64) ===
+// === buffer de vídeo do oled (tela de 128 x 64) ===
 uint8_t ssd[ssd1306_buffer_length];
 
-// === Área de renderização usada por render_on_display() ===
+// === área de renderização usada por render_on_display() ===
 struct render_area area = {
     .start_column = 0,
     .end_column = ssd1306_width - 1,
@@ -54,7 +54,7 @@ struct render_area area = {
     .end_page = ssd1306_n_pages - 1
 };
 
-// === Configuração global do canal DMA 0 ===
+// === configuração global do canal dma 0 ===
 dma_channel_config cfg_temp;
 
 /**
@@ -64,36 +64,36 @@ dma_channel_config cfg_temp;
  * canal DMA 0, interrupções e o display OLED.
  */
 void setup() {
-    // Inicializa a comunicação USB para printf()
+    // Inicializa a comunicação usb para printf()
     stdio_init_all();
-    //while (!stdio_usb_connected()) sleep_ms(200);  // Aguarda conexão USB
+    // While (!stdio_usb_connected()) sleep_ms(200); aguarda conexão usb
 
-    // Inicializa o ADC do RP2040 e habilita o sensor interno (canal 4)
+    // Inicializa o adc do rp2040 e habilita o sensor interno (canal 4)
     adc_init();
     adc_set_temp_sensor_enabled(true);
 
-    // Configura o canal DMA 0 para transferir dados do ADC
+    // Configura o canal dma 0 para transferir dados do adc
     cfg_temp = dma_channel_get_default_config(DMA_TEMP_CHANNEL);
     channel_config_set_transfer_data_size(&cfg_temp, DMA_SIZE_16);  // 16 bits
-    channel_config_set_read_increment(&cfg_temp, false);            // ADC FIFO fixo
+    channel_config_set_read_increment(&cfg_temp, false);            // Adc fifo fixo
     channel_config_set_write_increment(&cfg_temp, true);            // Buffer se move
-    channel_config_set_dreq(&cfg_temp, DREQ_ADC);                   // dispara com ADC
+    channel_config_set_dreq(&cfg_temp, DREQ_ADC);                   // Dispara com adc
 
-    // Configura interrupção do canal DMA 0
+    // Configura interrupção do canal dma 0
     dma_channel_set_irq0_enabled(DMA_TEMP_CHANNEL, true);
     irq_set_exclusive_handler(DMA_IRQ_0, dma_handler_temp);
     irq_set_enabled(DMA_IRQ_0, true);
 
-    // Inicializa o display OLED SSD1306 via I2C
-    i2c_init(i2c1, 400 * 1000);  // <---I2C primeiro
+    // Inicializa o display oled ssd1306 via i2c
+    i2c_init(i2c1, 400 * 1000);  // <---i2c primeiro
     gpio_set_function(14, GPIO_FUNC_I2C);
     gpio_set_function(15, GPIO_FUNC_I2C);
     gpio_pull_up(14);
     gpio_pull_up(15);
 
-    ssd1306_init();             // <---Depois do I2C estar pronto
+    ssd1306_init();             // <---depois do i2c estar pronto
     calculate_render_area_buffer_length(&area);
 
-    // Inicializa NeoPixel (Matriz RGB)
-    npInit(LED_PIN);  // substitua LED_PIN pelo valor real, ex: 7
+    // Inicializa neopixel (matriz rgb)
+    npInit(LED_PIN);  // Substitua led_pin pelo valor real, ex: 7
 }
